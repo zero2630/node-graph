@@ -1,0 +1,238 @@
+.node-graph-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a; /* темный фон */
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* верхняя панель */
+.node-graph-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.node-graph-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.node-graph-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.add-node-button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  background: #1f2937;
+  color: #e5e7eb;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+  white-space: nowrap;
+}
+
+.add-node-button:hover {
+  background: #374151;
+}
+
+.add-node-button:active {
+  transform: scale(0.97);
+}
+
+/* dropdown-контейнер для кнопок создания нод */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  /* добавляем паддинг вниз, чтобы зона hover была больше,
+     и курсор успевал "перепрыгнуть" на меню */
+  padding-bottom: 8px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;   /* сразу под кнопкой, без зазора */
+  left: 0;
+  /* убираем margin-top, чтобы не было дырки */
+  /* margin-top: 4px;  <= удалить/закомментировать */
+  background: #111827;
+  border-radius: 8px;
+  border: 1px solid #4b5563;
+  padding: 4px 0;
+  min-width: 160px;
+  display: none;
+  z-index: 20;
+}
+
+/* как и раньше — показываем меню, когда навели на контейнер */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+
+.dropdown-menu-button {
+  width: 100%;
+  text-align: left;
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  color: #e5e7eb;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dropdown-menu-button:hover {
+  background: #1f2937;
+}
+
+/* область канвы */
+.node-graph-canvas {
+  flex: 1;
+  background: radial-gradient(circle at top left, #1f2937, #020617);
+}
+
+/* ---------- КАСТОМНАЯ НОДА ---------- */
+
+.custom-node {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+
+  /* шире на 100px относительно изначальных 180/260 */
+  min-width: 280px;
+  max-width: 360px;
+}
+
+/* шапка висит над нодой */
+.custom-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+}
+
+.custom-node-label {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* кнопка удаления ноды */
+.custom-node-delete {
+  border: none;
+  background: #b91c1c;
+  color: #fee2e2;
+  border-radius: 999px;
+  width: 20px;
+  height: 20px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.custom-node-delete:hover {
+  background: #dc2626;
+}
+
+.custom-node-delete:active {
+  transform: scale(0.95);
+}
+
+/* тело ноды с табличкой */
+.custom-node-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #111827;
+  border: 1px solid #4b5563;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* таблица параметров внутри ноды */
+.custom-node-values {
+  margin-top: 2px;
+}
+
+.custom-node-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.custom-node-table thead th {
+  font-weight: 500;
+  text-align: left;
+  padding: 2px 4px;
+  border-bottom: 1px solid #374151;
+  color: #9ca3af;
+}
+
+.custom-node-table tbody td {
+  padding: 2px 4px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.custom-node-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.custom-node-table-key {
+  text-align: left;
+  color: #e5e7eb;
+}
+
+.custom-node-table-value {
+  text-align: right;
+  color: #d1d5db;
+  white-space: nowrap;
+}
+
+/* текст "нет параметров" */
+.custom-node-empty {
+  font-size: 11px;
+  opacity: 0.7;
+  padding: 2px 0 0;
+}
+
+/* ---------- КОННЕКТОРЫ (ХЭНДЛЫ) ---------- */
+
+.custom-handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid #e5e7eb;
+  background: #111827;
+}
+
+/* слегка смещаем, чтобы не лежали прямо на границе ноды */
+.custom-handle-top {
+  transform: translateY(-4px);
+}
+
+.custom-handle-bottom {
+  transform: translateY(4px);
+}
+
+.custom-handle-left {
+  transform: translateX(-4px);
+}
+
+.custom-handle-right {
+  transform: translateX(4px);
+}
