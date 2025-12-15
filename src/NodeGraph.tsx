@@ -443,8 +443,18 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ id, data }) => {
         <Handle id="io-top-target" type="target" position={Position.Top} className="custom-handle custom-handle-top custom-handle-hitbox" />
         <Handle id="io-top-source" type="source" position={Position.Top} className="custom-handle custom-handle-top custom-handle-visible" />
 
-        <Handle id="io-bottom-target" type="target" position={Position.Bottom} className="custom-handle custom-handle-bottom custom-handle-hitbox" />
-        <Handle id="io-bottom-source" type="source" position={Position.Bottom} className="custom-handle custom-handle-bottom custom-handle-visible" />
+        <Handle
+          id="io-bottom-target"
+          type="target"
+          position={Position.Bottom}
+          className="custom-handle custom-handle-bottom custom-handle-hitbox"
+        />
+        <Handle
+          id="io-bottom-source"
+          type="source"
+          position={Position.Bottom}
+          className="custom-handle custom-handle-bottom custom-handle-visible"
+        />
 
         <Handle id="io-left-target" type="target" position={Position.Left} className="custom-handle custom-handle-left custom-handle-hitbox" />
         <Handle id="io-left-source" type="source" position={Position.Left} className="custom-handle custom-handle-left custom-handle-visible" />
@@ -574,15 +584,8 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ id, data }) => {
                       {!resourceLoading && !resourceErr && (
                         <div className="node-resource-picker-grid">
                           {localResources.map((r) => (
-                            <button
-                              key={r.name}
-                              className="node-resource-picker-item"
-                              onClick={() => pickResource(resourcePicker, r.name)}
-                            >
-                              <span
-                                className="node-resource-dot"
-                                style={{ backgroundColor: r.name === "nothing" ? "#000000" : r.color }}
-                              />
+                            <button key={r.name} className="node-resource-picker-item" onClick={() => pickResource(resourcePicker, r.name)}>
+                              <span className="node-resource-dot" style={{ backgroundColor: r.name === "nothing" ? "#000000" : r.color }} />
                               <span className="node-resource-name">{r.name}</span>
                             </button>
                           ))}
@@ -680,7 +683,11 @@ export const NodeGraph: React.FC = () => {
     };
 
     const nameCandidate =
-      typeof backend.data?.name === "string" ? backend.data.name : typeof backend.name === "string" ? backend.name : undefined;
+      typeof backend.data?.name === "string"
+        ? backend.data.name
+        : typeof backend.name === "string"
+        ? backend.name
+        : undefined;
 
     const labelFromApi = typeof nameCandidate === "string" && nameCandidate.trim() ? nameCandidate.trim() : undefined;
 
@@ -690,16 +697,6 @@ export const NodeGraph: React.FC = () => {
       params: { uid: backend.uid, ...normalized },
     };
   }, []);
-
-  // ---------------- Handlers (нужны нодам) ----------------
-
-  const getResourceColor = useCallback(
-    (name: string) => {
-      if (name === "nothing") return "#000000";
-      return resources.find((r) => r.name === name)?.color ?? "#000000";
-    },
-    [resources]
-  );
 
   const fetchAllResources = useCallback(
     async (signal?: AbortSignal): Promise<ResourceItem[]> => {
@@ -729,7 +726,9 @@ export const NodeGraph: React.FC = () => {
       });
 
       const params = new URLSearchParams({ uid: String(id) }).toString();
-      apiFetch(`/node/remove?${params}`, { method: "DELETE" }).catch((err) => console.error("Failed to call /node/remove", err));
+      apiFetch(`/node/remove?${params}`, { method: "DELETE" }).catch((err) =>
+        console.error("Failed to call /node/remove", err)
+      );
     },
     [apiFetch, setEdges, setNodes]
   );
@@ -844,11 +843,9 @@ export const NodeGraph: React.FC = () => {
     [apiFetch, mapBackendNodeToData, setNodes]
   );
 
-  // ✅ Добавление ноды (UI + попытка синка с API)
   const handleAddNode = useCallback(async () => {
     const uid = generateUid();
 
-    // центр экрана -> координаты флоу
     const centerScreen = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     const pos =
       reactFlowInstance && "screenToFlowPosition" in reactFlowInstance
@@ -858,7 +855,8 @@ export const NodeGraph: React.FC = () => {
     const archetype = "генератор";
     const name = "Нода";
 
-    const getColorLocal = (n: string) => (n === "nothing" ? "#000000" : resources.find((r) => r.name === n)?.color ?? "#000000");
+    const getColorLocal = (n: string) =>
+      n === "nothing" ? "#000000" : resources.find((r) => r.name === n)?.color ?? "#000000";
 
     const optimisticNode: Node<CustomNodeData> = {
       id: String(uid),
@@ -890,10 +888,8 @@ export const NodeGraph: React.FC = () => {
       },
     };
 
-    // 1) сразу в UI
     setNodes((nds) => [...nds, optimisticNode]);
 
-    // 2) попытка синка с бэком
     try {
       const params = new URLSearchParams({
         uid: String(uid),
@@ -939,8 +935,6 @@ export const NodeGraph: React.FC = () => {
     handleLabelChange,
     handleArchetypeChange,
   ]);
-
-  // ---------------- ✅ ОДИН метод загрузки мира ----------------
 
   const loadWorld = useCallback(
     async (sid: string) => {
@@ -1025,17 +1019,7 @@ export const NodeGraph: React.FC = () => {
         console.error("loadWorld failed", err);
       }
     },
-    [
-      apiFetch,
-      fetchAllResources,
-      mapBackendNodeToData,
-      handleDeleteNode,
-      handleParamChange,
-      handleLabelChange,
-      handleArchetypeChange,
-      setNodes,
-      setEdges,
-    ]
+    [apiFetch, fetchAllResources, mapBackendNodeToData, handleDeleteNode, handleParamChange, handleLabelChange, handleArchetypeChange, setNodes, setEdges]
   );
 
   useEffect(() => {
@@ -1109,6 +1093,29 @@ export const NodeGraph: React.FC = () => {
     }
     if (sessionId) loadWorld(sessionId);
   }, [apiFetch, sessionId, loadWorld]);
+
+  const handleSaveSession = useCallback(async () => {
+    try {
+      await apiFetch("/world/save", { method: "POST" });
+    } catch (err) {
+      console.error("Failed to save session", err);
+    }
+  }, [apiFetch]);
+
+  // ✅ НОВОЕ: удалить выбранную сессию (НЕ текущую)
+  const handleDeleteSession = useCallback(
+    async (sid: string) => {
+      try {
+        const params = new URLSearchParams({ session_id: String(sid) }).toString();
+        const res = await apiFetchNoSession(`/world/delete_session?${params}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Backend returned error on /world/delete_session");
+        await fetchSessions();
+      } catch (err) {
+        console.error("Failed to delete session", err);
+      }
+    },
+    [apiFetchNoSession, fetchSessions]
+  );
 
   const handleResetView = useCallback(() => {
     reactFlowInstance?.setViewport({ x: 0, y: 0, zoom: 1 });
@@ -1248,9 +1255,12 @@ export const NodeGraph: React.FC = () => {
         <h1 className="node-graph-title">Node Graph</h1>
 
         <div className="node-graph-actions">
-          {/* ✅ ВОТ ОНА — кнопка добавления ноды */}
           <button className="add-node-button" onClick={handleAddNode} title="Добавить новую ноду">
             + Нода
+          </button>
+
+          <button className="add-node-button" onClick={handleSaveSession} title="Сохранить текущую сессию">
+            Сохранить
           </button>
 
           <button
@@ -1341,24 +1351,42 @@ export const NodeGraph: React.FC = () => {
                   {sessions.length === 0 ? (
                     <div className="resource-list-empty">Сессий нет (или API вернул пустой список).</div>
                   ) : (
-                    sessions.map((sid) => (
-                      <div
-                        key={sid}
-                        className="resource-pill"
-                        style={{
-                          cursor: "pointer",
-                          outline: sid === sessionId ? "2px solid rgba(255,255,255,0.35)" : "none",
-                        }}
-                        onClick={() => {
-                          setIsSessionModalOpen(false);
-                          reloadWorldForSession(sid);
-                        }}
-                        title="Переключиться на сессию"
-                      >
-                        <span className="resource-name">{sid}</span>
-                        {sid === sessionId && <span style={{ marginLeft: 8, opacity: 0.7 }}>(текущая)</span>}
-                      </div>
-                    ))
+                    sessions.map((sid) => {
+                      const isCurrent = sid === sessionId;
+                      return (
+                        <div
+                          key={sid}
+                          className="resource-pill"
+                          style={{
+                            cursor: "pointer",
+                            outline: isCurrent ? "2px solid rgba(255,255,255,0.35)" : "none",
+                          }}
+                          onClick={() => {
+                            setIsSessionModalOpen(false);
+                            reloadWorldForSession(sid);
+                          }}
+                          title="Переключиться на сессию"
+                        >
+                          <span className="resource-name">{sid}</span>
+                          {isCurrent && <span style={{ marginLeft: 8, opacity: 0.7 }}>(текущая)</span>}
+
+                          {/* ✅ кнопка удаления есть только НЕ у активной сессии */}
+                          {!isCurrent && (
+                            <button
+                              className="resource-delete-button"
+                              style={{ marginLeft: 10 }}
+                              title="Удалить сессию"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSession(sid);
+                              }}
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               )}
